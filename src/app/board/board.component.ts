@@ -15,7 +15,7 @@ export class BoardComponent implements OnInit {
   game$: Observable<Game | null>;
   selectedPit: Pit | null = null;
   errorMessage: string | null = null;
-  debug = true; // Mettre à false pour désactiver l'affichage debug
+  debug = true; 
 
   constructor(private gameService: GameService) {
     this.game$ = this.gameService.game$;
@@ -85,7 +85,7 @@ export class BoardComponent implements OnInit {
     return String(pit.id) === id1 || String(pit.id) === id2;
   }
 
-  // ⚠️ MODIFICATION : Vérifier que le trou bleu a bien des graines > 0
+  // Vérifier que le trou bleu a bien des graines > 0
   hasMandatoryPit(game: Game): boolean {
     const id = this.getMandatoryId(game);
     if (!id) return false;
@@ -93,7 +93,7 @@ export class BoardComponent implements OnInit {
     return pit ? pit.seeds > 0 : false;
   }
 
-  // ⚠️ MODIFICATION : Ne contraindre que si le trou bleu existe et a des graines
+  // Ne contraindre que si le trou bleu existe et a des graines
   selectPit(pit: Pit, game: Game) {
     if (!game || game.status === 'finished') return;
     if (Number(game.currentPlayer) !== Number(pit.owner)) return;
@@ -108,7 +108,7 @@ export class BoardComponent implements OnInit {
     }
 
     if (mandatoryId !== null && String(pit.id) !== mandatoryId) {
-      this.errorMessage = '⚠️ Vous devez jouer le trou bleu (il contient encore des graines) !';
+      this.errorMessage = 'Vous devez jouer le trou bleu (il contient encore des graines) !';
       this.selectedPit = null;
       return;
     }
