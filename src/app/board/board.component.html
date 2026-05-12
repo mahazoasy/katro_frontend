@@ -1,0 +1,84 @@
+<div class="game-container">
+  <h1>🎲 KATRO</h1>
+  <p class="subtitle">Jeu traditionnel malgache &bull; 16 trous &bull; 2 graines &bull; Sens ↺ anti-horaire</p>
+
+  <!-- Bloc de debug (à supprimer une fois le problème résolu) -->
+  <div *ngIf="debug" style="background:#f0f0f0; padding:10px; margin:10px; border:1px solid #ccc;">
+    <strong>Debug</strong>
+    <div *ngIf="(game$ | async) as game; else noGame">
+      game reçu : id={{ game.id }}, pits length={{ game.pits.length }}
+    </div>
+    <ng-template #noGame> game$ n'a pas encore émis de valeur (ou null)</ng-template>
+  </div>
+
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <!-- Bloc principal -->
+  <div *ngIf="(game$ | async) as game; else loading">
+    <!-- Vérification que game.pits existe et est non vide -->
+    <div *ngIf="game.pits && game.pits.length > 0; else noPits">
+      <!-- Étiquette Joueur 1 -->
+      <div class="player-label p1">
+        <span *ngIf="game.currentPlayer === 1" class="current-turn-indicator">▶ Son tour</span>
+        <span>Joueur 1</span>
+        <span class="player-dot"></span>
+      </div>
+
+      <!-- Plateau -->
+      <div class="board-wrapper">
+        <div class="handle"></div>
+        <div class="board">
+          <div
+            *ngFor="let pit of game.pits"
+            class="pit"
+            [class.player1]="pit.owner === 1"
+            [class.player2]="pit.owner === 2"
+            [class.selected]="pit === selectedPit"
+            [class.active-turn]="pit.owner === game.currentPlayer && pit.seeds > 0 && !hasMandatoryPit(game)"
+            [class.last-pit]="isLastPit(pit, game)"
+            [class.mandatory-pit]="isMandatoryPit(pit, game)"
+            (click)="selectPit(pit, game)">
+            <span *ngIf="isLastPit(pit, game)" class="last-pit-badge" [class.mandatory-badge]="isMandatoryPit(pit, game)">▶</span>
+            <div class="seeds">
+              <div *ngFor="let s of getRange(pit.seeds)" class="seed"></div>
+            </div>
+            <span class="seed-count">{{ pit.seeds }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Étiquette Joueur 2 -->
+      <div class="player-label p2">
+        <span class="player-dot"></span>
+        <span>Joueur 2</span>
+        <span *ngIf="game.currentPlayer === 2" class="current-turn-indicator">▶ Son tour</span>
+      </div>
+
+      <!-- Message trou bleu -->
+      <div class="hint-area">
+        <p *ngIf="hasMandatoryPit(game)" class="mandatory-hint">🔵 Commencez par le trou bleu</p>
+        <p *ngIf="!hasMandatoryPit(game) && game.status === 'in-progress'" class="info-hint">Choisissez un trou de votre camp puis cliquez ▶ Jouer</p>
+      </div>
+
+      <!-- Bouton Jouer -->
+      <div *ngIf="selectedPit && game.currentPlayer === selectedPit.owner" class="controls">
+        <p>Trou sélectionné · <strong>{{ selectedPit.seeds }}</strong> graine(s)</p>
+        <button class="btn-play" (click)="play(game)">▶ Jouer ce trou</button>
+        <button class="btn-cancel" (click)="selectedPit = null">✕ Annuler</button>
+      </div>
+
+      <!-- Fin de partie -->
+      <div *ngIf="game.status === 'finished'" class="winner">🏆 Joueur {{ game.winner }} remporte la partie !</div>
+    </div>
+
+    <ng-template #noPits>
+      <div class="error">⚠️ Les données du plateau sont invalides (game.pits manquant ou vide).</div>
+    </ng-template>
+
+    <button class="btn-new" (click)="newGame()">↺ Nouvelle partie</button>
+  </div>
+
+  <ng-template #loading>
+    <p style="color:#a07040;">Chargement…</p>
+  </ng-template>
+</div>
